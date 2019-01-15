@@ -36,6 +36,8 @@ public protocol FireMockProtocol {
     /// Specifies the name of mock file used.
     func mockFile() -> String
 
+	/// Provides a hook to dynamically patch mock files e.g. for updating dates in JSON returns.
+	func patchMockFile(fileStringRepresentation: String) -> String
 }
 
 public extension FireMockProtocol {
@@ -75,7 +77,13 @@ public extension FireMockProtocol {
         if let path = bundle.path(forResource: resourceName, ofType: extensionName) {
             let url = URL(fileURLWithPath: path)
             do {
-                return try Data(contentsOf: url, options: NSData.ReadingOptions.mappedIfSafe)
+				let fileString = try String(contentsOf: url, encoding: .utf8)
+				let patchedFileString = patchMockFile(fileStringRepresentation: fileString)
+				if let data = patchedFileString.data(using: .utf8) {
+					return data
+				} else {
+					throw MockError.buildDataFailed
+				}
             } catch {
                 throw MockError.buildDataFailed
             }
