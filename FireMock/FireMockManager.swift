@@ -79,21 +79,25 @@ public struct FireMock {
     ///   - httpMethod: HTTP Method.
     ///   - enabled: Specifies if mock is used.
     public static func register<T: FireMockProtocol>(mock: T..., forURL url: URL, httpMethod: MockHTTPMethod, enabled: Bool = true) {
-
-        if mock.isEmpty {
-            FireMockDebug.debug(message: "Register with an empty mock for \(url)", level: .high)
-            return
-        }
-
-        // Remove similar mock if existing
-        mocks = mocks.filter({ !($0.mockType == ConfigMock.ConfigMockType.url(url: url) && $0.httpMethod == httpMethod) })
-
-        let config = ConfigMock(url: url, mocks: mock, httpMethod: httpMethod, enabled: enabled)
-        mocks.append(config)
-
-        let names = mock.reduce("", { $0 + " " + ($1.name ?? "") })
-        FireMockDebug.debug(message: "Register mock -\(names)- for \(url)", level: .high)
+		register(mock: mock.map { $0 }, forURL: url, httpMethod: httpMethod, enabled: enabled)
     }
+
+	public static func register<T: FireMockProtocol>(mock: [T], forURL url: URL, httpMethod: MockHTTPMethod, enabled: Bool = true) {
+
+		if mock.isEmpty {
+			FireMockDebug.debug(message: "Register with an empty mock for \(url)", level: .high)
+			return
+		}
+
+		// Remove similar mock if existing
+		mocks = mocks.filter({ !($0.mockType == ConfigMock.ConfigMockType.url(url: url) && $0.httpMethod == httpMethod) })
+
+		let config = ConfigMock(url: url, mocks: mock, httpMethod: httpMethod, enabled: enabled)
+		mocks.append(config)
+
+		let names = mock.reduce("", { $0 + " " + ($1.name ?? "") })
+		FireMockDebug.debug(message: "Register mock -\(names)- for \(url)", level: .high)
+	}
 
 
     /// Register a FireMockProtocol used for a specific regex when request is fired.
@@ -105,21 +109,25 @@ public struct FireMock {
     ///   - httpMethod: HTTP Method.
     ///   - enabled: Specifies if mock is used.
     public static func register<T: FireMockProtocol>(mock: T..., regex: String, httpMethod: MockHTTPMethod, enabled: Bool = true) {
-
-        if mock.isEmpty {
-            FireMockDebug.debug(message: "Register with an empty mock for \(regex)", level: .high)
-            return
-        }
-
-        // Remove similar mock if existing
-        mocks = mocks.filter({ !($0.mockType == ConfigMock.ConfigMockType.regex(regex: regex) && $0.httpMethod == httpMethod) })
-        
-        let config = ConfigMock(regex: regex, mocks: mock, httpMethod: httpMethod, enabled: enabled)
-        mocks.append(config)
-
-        let names = mock.reduce("", { $0 + " " + ($1.name ?? "") })
-        FireMockDebug.debug(message: "Register mock -\(names)- for regex \(regex)", level: .high)
+		register(mock: mock.map { $0 }, regex: regex, httpMethod: httpMethod, enabled: enabled)
     }
+
+	public static func register<T: FireMockProtocol>(mock: [T], regex: String, httpMethod: MockHTTPMethod, enabled: Bool = true) {
+		if mock.isEmpty {
+			FireMockDebug.debug(message: "Register with an empty mock for \(regex)", level: .high)
+			return
+		}
+
+		// Remove similar mock if existing
+		mocks = mocks.filter({ !($0.mockType == ConfigMock.ConfigMockType.regex(regex: regex) && $0.httpMethod == httpMethod) })
+
+		let config = ConfigMock(regex: regex, mocks: mock, httpMethod: httpMethod, enabled: enabled)
+		mocks.append(config)
+
+		let names = mock.reduce("", { $0 + " " + ($1.name ?? "") })
+		FireMockDebug.debug(message: "Register mock -\(names)- for regex \(regex)", level: .high)
+	}
+
 
     /// Unregister a FireMockProtocol for a specific URL.
     ///
